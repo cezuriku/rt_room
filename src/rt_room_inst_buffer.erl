@@ -8,6 +8,7 @@
     add_player/2,
     remove_player/2,
     move_player/4,
+    get_frame/2,
     stop/1
 ]).
 
@@ -21,15 +22,14 @@
     handle_info/2
 ]).
 
--type players() :: #{non_neg_integer() := Position :: {integer(), integer()}}.
 -type frame() :: non_neg_integer().
 
 -record(data, {
-    players = #{} :: #{pid() := non_neg_integer()},
+    players = #{} :: #{pid() := rt_room:player_id()},
+    next_player_id = 0 :: rt_room:player_id(),
+    new_players = #{} :: rt_room:players(),
+    players_positions = #{} :: #{frame() := rt_room:players()},
     removed_players = [] :: [non_neg_integer()],
-    new_players = #{} :: players(),
-    next_player_id = 0 :: non_neg_integer(),
-    players_positions = #{} :: #{frame() := players()},
     frame = 1 :: frame()
 }).
 
@@ -40,7 +40,7 @@
 start_link() ->
     gen_server:start_link(?MODULE, [], []).
 
--spec add_player(BufferPid :: pid(), PlayerPid :: pid()) -> {ok, non_neg_integer()}.
+-spec add_player(BufferPid :: pid(), PlayerPid :: pid()) -> {ok, rt_room:player_id()}.
 add_player(BufferPid, PlayerPid) ->
     gen_server:call(BufferPid, {add_player, PlayerPid}).
 
@@ -50,12 +50,21 @@ remove_player(BufferPid, PlayerPid) ->
 
 -spec move_player(
     Pid :: pid(),
-    PlayerId :: non_neg_integer(),
+    PlayerId :: rt_room:player_id(),
     Frame :: non_neg_integer(),
     Position :: {integer(), integer()}
 ) -> ok | {error, term()}.
 move_player(Pid, PlayerId, Frame, Position) ->
     gen_server:call(Pid, {move_player, PlayerId, Frame, Position}).
+
+-spec get_frame(BufferPid :: pid(), Frame :: frame()) ->
+    {
+        AddedPlayers :: rt_room:players(),
+        UpdatedPlayers :: rt_room:players(),
+        DeletedPlayers :: [rt_room:player_id()]
+    }.
+get_frame(BufferPid, Frame) ->
+    gen_server:call(BufferPid, {get_frame, Frame}).
 
 stop(Pid) ->
     gen_server:stop(Pid).
@@ -116,6 +125,28 @@ handle_call(
                 players_positions = Positions#{ReqFrame => FramePositions}
             }}
     end;
+handle_call(
+    {get_frame, ReqFrame},
+    _From,
+    #data{
+        new_players = AddedPlayers,
+        players_positions = Positions,
+        removed_players = RemovedPlayers
+    } = Data
+) ->
+    FramePositions =
+        case Positions of
+            #{ReqFrame := FramePositions0} ->
+                FramePositions0;
+            _ ->
+                #{}
+        end,
+    {reply, {AddedPlayers, FramePositions, RemovedPlayers}, Data#data{
+        frame = ReqFrame,
+        new_players = #{},
+        players_positions = maps:without([ReqFrame], Positions),
+        removed_players = []
+    }};
 handle_call(EventContent, _From, Data) ->
     print_unhandled_event(call, EventContent, Data),
     {reply,

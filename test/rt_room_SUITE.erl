@@ -63,15 +63,15 @@ create_room_test(_Config) ->
 
 add_remove_player_test(Config) ->
     RtRoom = ?config(room, Config),
-    {ok, _PlayerId} = rt_room:add_player(RtRoom, self()),
+    {ok, _PlayerId} = rt_room:add_player(RtRoom, ?MODULE, self()),
     ok = rt_room:remove_player(RtRoom, self()).
 
 move_player_test(Config) ->
     RtRoom = ?config(room, Config),
-    {ok, PlayerId} = rt_room:add_player(RtRoom, self()),
+    {ok, PlayerId} = rt_room:add_player(RtRoom, ?MODULE, self()),
     ok = rt_room:move_player(RtRoom, PlayerId, 8, {500, 500}).
 
 move_player_late_test(Config) ->
     RtRoom = ?config(room, Config),
-    {ok, PlayerId} = rt_room:add_player(RtRoom, self()),
+    {ok, PlayerId} = rt_room:add_player(RtRoom, ?MODULE, self()),
     {error, _} = rt_room:move_player(RtRoom, PlayerId, _FramePassed = 0, {500, 500}).
