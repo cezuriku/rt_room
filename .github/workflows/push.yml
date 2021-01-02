@@ -1,0 +1,13 @@
+name: Test rt_room
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      -
+        name: Build docker image
+        run: docker build . -t rt_room-test
+      -
+        name: Run tests
+        run: docker run rt_room-test
