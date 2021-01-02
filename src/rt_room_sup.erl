@@ -7,20 +7,30 @@
 
 -behaviour(supervisor).
 
--export([start_link/0]).
+-export([start_link/0, create_room/0]).
 
 -export([init/1]).
 
 -define(SERVER, ?MODULE).
 
 start_link() ->
-    supervisor:start_link({local, ?SERVER}, ?MODULE, []).
+    {ok, _Pid} = supervisor:start_link({local, ?SERVER}, ?MODULE, []).
+
+create_room() ->
+    supervisor:start_child(?SERVER, []).
 
 init([]) ->
-    SupFlags = #{strategy => one_for_all,
-                 intensity => 0,
-                 period => 1},
-    ChildSpecs = [],
+    SupFlags = #{
+        strategy => simple_one_for_one,
+        intensity => 0,
+        period => 1
+    },
+    Inst = #{
+        id => instance,
+        start => {rt_room_inst_sup, start_link, []},
+        restart => temporary
+    },
+    ChildSpecs = [Inst],
     {ok, {SupFlags, ChildSpecs}}.
 
 %% internal functions
