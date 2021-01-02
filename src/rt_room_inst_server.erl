@@ -22,7 +22,7 @@
 ]).
 
 -record(data, {
-    buffer :: pid(),
+    buffer :: pid() | undefined,
     observers :: [pid()],
     players :: #{integer() := Position :: {integer(), integer()}}
 }).
