@@ -25,6 +25,9 @@ init_per_suite(Config) ->
 end_per_suite(_Config) ->
     ok.
 
+init_per_group(basic, Config) ->
+    {ok, RtRoom} = rt_room:create(),
+    [{room, RtRoom} | Config];
 init_per_group(_GroupName, Config) ->
     Config.
 
@@ -38,13 +41,21 @@ end_per_testcase(_TestCase, _Config) ->
     ok.
 
 groups() ->
-    [].
+    [{basic, [], [add_remove_player_test]}].
 
 all() ->
-    [create_room_test].
+    [
+        create_room_test,
+        {group, basic}
+    ].
 
 %%%-------------------------------------------------------------------
 %% Test cases
 
 create_room_test(_Config) ->
     {ok, _RtRoom} = rt_room:create().
+
+add_remove_player_test(Config) ->
+    RtRoom = ?config(room, Config),
+    {ok, _PlayerId} = rt_room:add_player(RtRoom, self()),
+    ok = rt_room:remove_player(RtRoom, self()).

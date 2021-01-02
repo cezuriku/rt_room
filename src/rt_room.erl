@@ -3,6 +3,8 @@
 %% API
 -export([
     create/0,
+    add_player/2,
+    remove_player/2,
     stop/1
 ]).
 
@@ -30,6 +32,16 @@ create() ->
         buffer = Buffer,
         server = Server
     }}.
+
+-spec add_player(rt_room(), PlayerPid :: pid()) -> {ok, non_neg_integer()}.
+add_player(#rt_room{buffer = Buffer, server = Server}, PlayerPid) ->
+    rt_room_inst_server:add_observer(Server, PlayerPid),
+    rt_room_inst_buffer:add_player(Buffer, PlayerPid).
+
+-spec remove_player(rt_room(), PlayerPid :: pid()) -> ok.
+remove_player(#rt_room{buffer = Buffer, server = Server}, PlayerPid) ->
+    rt_room_inst_server:remove_observer(Server, PlayerPid),
+    rt_room_inst_buffer:remove_player(Buffer, PlayerPid).
 
 stop(Pid) ->
     gen_server:stop(Pid).
