@@ -31,6 +31,10 @@ init_per_group(basic, Config) ->
 init_per_group(_GroupName, Config) ->
     Config.
 
+end_per_group(basic, Config) ->
+    RtRoom = ?config(room, Config),
+    rt_room:stop(RtRoom),
+    ok;
 end_per_group(_GroupName, _Config) ->
     ok.
 
@@ -51,15 +55,16 @@ groups() ->
 
 all() ->
     [
-        create_room_test,
+        create_stop_room_test,
         {group, basic}
     ].
 
 %%%-------------------------------------------------------------------
 %% Test cases
 
-create_room_test(_Config) ->
-    {ok, _RtRoom} = rt_room:create().
+create_stop_room_test(_Config) ->
+    {ok, RtRoom} = rt_room:create(),
+    rt_room:stop(RtRoom).
 
 add_remove_player_test(Config) ->
     RtRoom = ?config(room, Config),

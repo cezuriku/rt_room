@@ -56,5 +56,5 @@ remove_player(#rt_room{buffer = Buffer, server = Server}, PlayerPid) ->
 move_player(#rt_room{buffer = Buffer}, PlayerId, Frame, Position) ->
     rt_room_inst_buffer:move_player(Buffer, PlayerId, Frame, Position).
 
-stop(Pid) ->
-    gen_server:stop(Pid).
+stop(#rt_room{supervisor = RoomSup}) ->
+    rt_room_sup:stop_room(RoomSup).

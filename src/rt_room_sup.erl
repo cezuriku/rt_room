@@ -7,17 +7,20 @@
 
 -behaviour(supervisor).
 
--export([start_link/0, create_room/0]).
+-export([start_link/0, create_room/0, stop_room/1]).
 
 -export([init/1]).
 
 -define(SERVER, ?MODULE).
 
 start_link() ->
-    {ok, _Pid} = supervisor:start_link({local, ?SERVER}, ?MODULE, []).
+    supervisor:start_link({local, ?SERVER}, ?MODULE, []).
 
 create_room() ->
     supervisor:start_child(?SERVER, []).
+
+stop_room(RoomPid) ->
+    supervisor:terminate_child(?SERVER, RoomPid).
 
 init([]) ->
     SupFlags = #{
