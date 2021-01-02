@@ -1,3 +1,5 @@
+![Test rt_room](https://github.com/cezuriku/rt_room/workflows/Test%20rt_room/badge.svg)
+
 rt_room
 =====
 
