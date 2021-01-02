@@ -5,6 +5,7 @@
     create/0,
     add_player/2,
     remove_player/2,
+    move_player/4,
     stop/1
 ]).
 
@@ -42,6 +43,15 @@ add_player(#rt_room{buffer = Buffer, server = Server}, PlayerPid) ->
 remove_player(#rt_room{buffer = Buffer, server = Server}, PlayerPid) ->
     rt_room_inst_server:remove_observer(Server, PlayerPid),
     rt_room_inst_buffer:remove_player(Buffer, PlayerPid).
+
+-spec move_player(
+    rt_room(),
+    PlayerId :: non_neg_integer(),
+    Frame :: non_neg_integer(),
+    Position :: {integer(), integer()}
+) -> ok.
+move_player(#rt_room{buffer = Buffer}, PlayerId, Frame, Position) ->
+    rt_room_inst_buffer:move_player(Buffer, PlayerId, Frame, Position).
 
 stop(Pid) ->
     gen_server:stop(Pid).

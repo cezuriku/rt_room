@@ -41,7 +41,13 @@ end_per_testcase(_TestCase, _Config) ->
     ok.
 
 groups() ->
-    [{basic, [], [add_remove_player_test]}].
+    [
+        {basic, [], [
+            add_remove_player_test,
+            move_player_test,
+            move_player_late_test
+        ]}
+    ].
 
 all() ->
     [
@@ -59,3 +65,13 @@ add_remove_player_test(Config) ->
     RtRoom = ?config(room, Config),
     {ok, _PlayerId} = rt_room:add_player(RtRoom, self()),
     ok = rt_room:remove_player(RtRoom, self()).
+
+move_player_test(Config) ->
+    RtRoom = ?config(room, Config),
+    {ok, PlayerId} = rt_room:add_player(RtRoom, self()),
+    ok = rt_room:move_player(RtRoom, PlayerId, 8, {500, 500}).
+
+move_player_late_test(Config) ->
+    RtRoom = ?config(room, Config),
+    {ok, PlayerId} = rt_room:add_player(RtRoom, self()),
+    {error, _} = rt_room:move_player(RtRoom, PlayerId, _FramePassed = 0, {500, 500}).

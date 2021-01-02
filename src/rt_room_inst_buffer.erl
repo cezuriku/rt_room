@@ -7,6 +7,7 @@
     start_link/0,
     add_player/2,
     remove_player/2,
+    move_player/4,
     stop/1
 ]).
 
@@ -21,12 +22,15 @@
 ]).
 
 -type players() :: #{non_neg_integer() := Position :: {integer(), integer()}}.
+-type frame() :: non_neg_integer().
 
 -record(data, {
     players = #{} :: #{pid() := non_neg_integer()},
     removed_players = [] :: [non_neg_integer()],
     new_players = #{} :: players(),
-    next_player_id = 0 :: non_neg_integer()
+    next_player_id = 0 :: non_neg_integer(),
+    players_positions = #{} :: #{frame() := players()},
+    frame = 1 :: frame()
 }).
 
 %%====================================================================
@@ -43,6 +47,15 @@ add_player(BufferPid, PlayerPid) ->
 -spec remove_player(BufferPid :: pid(), PlayerPid :: pid()) -> ok.
 remove_player(BufferPid, PlayerPid) ->
     gen_server:cast(BufferPid, {remove_player, PlayerPid}).
+
+-spec move_player(
+    Pid :: pid(),
+    PlayerId :: non_neg_integer(),
+    Frame :: non_neg_integer(),
+    Position :: {integer(), integer()}
+) -> ok | {error, term()}.
+move_player(Pid, PlayerId, Frame, Position) ->
+    gen_server:call(Pid, {move_player, PlayerId, Frame, Position}).
 
 stop(Pid) ->
     gen_server:stop(Pid).
@@ -83,6 +96,26 @@ handle_call(
         new_players = NewPlayers#{NextId => _Position = {0, 0}},
         next_player_id = NextId + 1
     }};
+handle_call(
+    {move_player, PlayerId, ReqFrame, Position},
+    _From,
+    #data{players_positions = Positions, frame = Frame} = Data
+) ->
+    if
+        ReqFrame =< Frame ->
+            {reply, {error, frame_too_late}, Data};
+        true ->
+            FramePositions =
+                case Positions of
+                    #{ReqFrame := FramePositions0} ->
+                        FramePositions0#{PlayerId => Position};
+                    _ ->
+                        #{PlayerId => Position}
+                end,
+            {reply, ok, Data#data{
+                players_positions = Positions#{ReqFrame => FramePositions}
+            }}
+    end;
 handle_call(EventContent, _From, Data) ->
     print_unhandled_event(call, EventContent, Data),
     {reply,
