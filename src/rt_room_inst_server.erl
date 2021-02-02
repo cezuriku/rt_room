@@ -71,7 +71,11 @@ handle_cast(EventContent, Data) ->
 
 handle_call({set_buffer, Buffer}, _From, Data) ->
     {reply, ok, Data#data{buffer = Buffer}};
-handle_call({add_observer, ObserverModule, ObserverPid}, _From, #data{observers = Observers} = Data) ->
+handle_call(
+    {add_observer, ObserverModule, ObserverPid},
+    _From,
+    #data{observers = Observers} = Data
+) ->
     {reply, ok, Data#data{observers = [{ObserverModule, ObserverPid} | Observers]}};
 handle_call(EventContent, _From, Data) ->
     print_unhandled_event(call, EventContent, Data),
