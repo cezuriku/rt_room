@@ -3,6 +3,8 @@
 %% API
 -export([
     create/0,
+    get_or_create/1,
+    delete/1,
     add_player/3,
     remove_player/2,
     move_player/4,
@@ -36,6 +38,19 @@ create() ->
         buffer = Buffer,
         server = Server
     }}.
+
+-spec get_or_create(Ref :: term()) -> {ok, rt_room()}.
+get_or_create(Ref) ->
+    case rt_room_register:get_room(Ref) of
+        {ok, Room} ->
+            {ok, Room};
+        _ ->
+            rt_room_register:create_room(Ref)
+    end.
+
+-spec delete(Ref :: term()) -> ok.
+delete(Ref) ->
+    rt_room_register:delete_room(Ref).
 
 -spec add_player(rt_room(), Module :: module(), PlayerPid :: pid()) -> {ok, player_id()}.
 add_player(#rt_room{buffer = Buffer, server = Server}, Module, PlayerPid) ->

@@ -14,6 +14,7 @@
 
 %%%-------------------------------------------------------------------
 %% Test server callbacks
+%%%-------------------------------------------------------------------
 
 suite() ->
     [].
@@ -56,15 +57,35 @@ groups() ->
 all() ->
     [
         create_stop_room_test,
+        get_or_create_new_room_test,
+        get_or_create_already_created_room_test,
+        delete_room_test,
         {group, basic}
     ].
 
 %%%-------------------------------------------------------------------
 %% Test cases
+%%%-------------------------------------------------------------------
 
 create_stop_room_test(_Config) ->
     {ok, RtRoom} = rt_room:create(),
-    rt_room:stop(RtRoom).
+    ok = rt_room:stop(RtRoom).
+
+get_or_create_new_room_test(_Config) ->
+    {ok, _RtRoom} = rt_room:get_or_create(test),
+    ok = rt_room:delete(test).
+
+get_or_create_already_created_room_test(_Config) ->
+    {ok, RtRoom} = rt_room:get_or_create(test),
+    {ok, RtRoom} = rt_room:get_or_create(test),
+    ok = rt_room:delete(test).
+
+delete_room_test(_Config) ->
+    {ok, RtRoom1} = rt_room:get_or_create(test),
+    ok = rt_room:delete(test),
+    {ok, RtRoom2} = rt_room:get_or_create(test),
+    ok = rt_room:delete(test),
+    ?assert(RtRoom1 =/= RtRoom2).
 
 add_remove_player_test(Config) ->
     RtRoom = ?config(room, Config),

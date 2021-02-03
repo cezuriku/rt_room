@@ -71,7 +71,7 @@ handle_call({create_room, Name}, _From, Data) ->
         #{Name := _Room} ->
             {reply, {error, already_created}, Data};
         _ ->
-            {ok, Room} = rt_room_sup:create_room(),
+            {ok, Room} = rt_room:create(),
             {reply, {ok, Room}, Data#{Name => Room}}
     end;
 handle_call(EventContent, _From, Data) ->
