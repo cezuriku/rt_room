@@ -54,6 +54,8 @@ init([]) ->
     {ok, #{}}.
 
 handle_cast({delete_room, Name}, Data) ->
+    #{Name := Room} = Data,
+    rt_room:stop(Room),
     {noreply, maps:without([Name], Data)};
 handle_cast(EventContent, Data) ->
     print_unhandled_event(cast, EventContent, Data),
