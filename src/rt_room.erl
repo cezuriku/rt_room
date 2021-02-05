@@ -52,10 +52,11 @@ get_or_create(Ref) ->
 delete(Ref) ->
     rt_room_register:delete_room(Ref).
 
--spec add_player(rt_room(), Module :: module(), PlayerPid :: pid()) -> {ok, player_id()}.
+-spec add_player(rt_room(), Module :: module(), PlayerPid :: pid()) -> {player_id(), players()}.
 add_player(#rt_room{buffer = Buffer, server = Server}, Module, PlayerPid) ->
-    rt_room_inst_server:add_observer(Server, Module, PlayerPid),
-    rt_room_inst_buffer:add_player(Buffer, PlayerPid).
+    Players = rt_room_inst_server:add_observer(Server, Module, PlayerPid),
+    {ok, PlayerId} = rt_room_inst_buffer:add_player(Buffer, PlayerPid),
+    {PlayerId, Players}.
 
 -spec remove_player(rt_room(), PlayerPid :: pid()) -> ok.
 remove_player(#rt_room{buffer = Buffer, server = Server}, PlayerPid) ->

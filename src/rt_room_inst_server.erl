@@ -38,6 +38,7 @@ start_link() ->
 set_buffer(Pid, Buffer) ->
     gen_server:call(Pid, {set_buffer, Buffer}).
 
+-spec add_observer(pid(), module(), pid()) -> rt_room:players().
 add_observer(Pid, ObserverModule, ObserverPid) ->
     gen_server:call(Pid, {add_observer, ObserverModule, ObserverPid}).
 
@@ -74,9 +75,12 @@ handle_call({set_buffer, Buffer}, _From, Data) ->
 handle_call(
     {add_observer, ObserverModule, ObserverPid},
     _From,
-    #data{observers = Observers} = Data
+    #data{
+        observers = Observers,
+        players = Players
+    } = Data
 ) ->
-    {reply, ok, Data#data{observers = [{ObserverModule, ObserverPid} | Observers]}};
+    {reply, Players, Data#data{observers = [{ObserverModule, ObserverPid} | Observers]}};
 handle_call(EventContent, _From, Data) ->
     print_unhandled_event(call, EventContent, Data),
     {reply,
