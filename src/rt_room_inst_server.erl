@@ -102,7 +102,7 @@ handle_info(
 ) ->
     {AddedPlayers, UpdatedPlayers, DeletedPlayers} =
         rt_room_inst_buffer:get_frame(Buffer, Frame),
-    NewPlayers = maps:merge(Players, UpdatedPlayers),
+    NewPlayers = maps:without(DeletedPlayers, maps:merge(Players, UpdatedPlayers)),
     lists:foreach(
         fun({Module, Pid}) ->
             ok = Module:handle_new_frame(
